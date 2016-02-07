@@ -65,6 +65,9 @@ PRODUCT_PACKAGES += \
     camera.msm8226 \
     libxml2
 
+PRODUCT_PROPERTY_OVERRIDES += \
+persist.camera.shutter.disable=1
+
 # CRDA
 PRODUCT_PACKAGES += \
     crda \
