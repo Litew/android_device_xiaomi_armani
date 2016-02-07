@@ -200,6 +200,7 @@ service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh "onboot"
     class core
     user root
     oneshot
+    disabled
 
 on property:vold.decrypt=trigger_restart_framework
     start config_bluetooth
@@ -364,6 +365,7 @@ service time_daemon /system/bin/time_daemon
     class late_start
     user root
     group root
+    disabled
 
 service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
     class main
@@ -375,6 +377,7 @@ service thermal-engine /system/bin/thermal-engine
     class main
     user root
     group root
+    disabled
 
 service qrngd /system/bin/qrngd -f
     class main
