@@ -65,7 +65,7 @@ on init
     symlink /storage/usbdisk /usb_storage
 
 on fs
-    mount_all ./fstab.armani
+    # mount_all ./fstab.armani
     restorecon /persist
     setprop ro.crypto.fuse_sdcard true
     write /sys/kernel/boot_adsp/boot 1
@@ -426,11 +426,13 @@ service gsiff_daemon /system/bin/gsiff_daemon
    group gps net_raw
 
 service quipc_igsn /system/bin/quipc_igsn
+    setenv LD_PRELOAD /usr/libexec/droid-hybris/system/lib/libbson.so
     class late_start
     user gps
     group inet gps qcom_diag
 
 service quipc_main /system/bin/quipc_main
+    setenv LD_PRELOAD /usr/libexec/droid-hybris/system/lib/libbson.so
     class late_start
     user gps
     group gps net_admin wifi inet qcom_diag
