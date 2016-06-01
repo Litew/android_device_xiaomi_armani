@@ -86,7 +86,7 @@ TARGET_PROVIDES_GPS_LOC_API := true
 
 # Graphics
 BOARD_EGL_CFG := device/xiaomi/armani/configs/egl.cfg
-TARGET_QCOM_DISPLAY_VARIANT := caf-new
+TARGET_QCOM_DISPLAY_VARIANT := caf
 TARGET_USES_C2D_COMPOSITION := true
 TARGET_USES_ION := true
 USE_OPENGL_RENDERER := true
@@ -116,7 +116,7 @@ TARGET_LIBINIT_DEFINES_FILE := device/xiaomi/armani/init/init_armani.c
 TARGET_PROVIDES_LIBLIGHT := true
 
 # Media
-TARGET_QCOM_MEDIA_VARIANT := caf-new
+TARGET_QCOM_MEDIA_VARIANT := caf
 TARGET_ENABLE_QC_AV_ENHANCEMENTS := true
 
 # Power
