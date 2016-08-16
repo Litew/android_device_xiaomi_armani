@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
  * Copyright (C) 2016 The CyanogenMod Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +14,16 @@
  * limitations under the License.
  */
 
-#ifndef _BDROID_BUILDCFG_H
-#define _BDROID_BUILDCFG_H
+#define CAMERA_PARAMETERS_EXTRA_C \
+const char CameraParameters::KEY_QC_AE_BRACKET_HDR[] = "ae-bracket-hdr"; \
+const char CameraParameters::KEY_QC_CAPTURE_BURST_EXPOSURE[] = "capture-burst-exposures"; \
+const char CameraParameters::KEY_QC_MORPHO_HDR[] = "morpho-hdr"; \
+const char CameraParameters::KEY_QC_ZSL[] = "zsl"; \
+\
 
-#define BTM_DEF_LOCAL_NAME   "Xiaomi HM 1S"
-
-#define BLUETOOTH_QTI_SW TRUE
-// Disables read remote device feature
-#define BTA_SKIP_BLE_READ_REMOTE_FEAT FALSE
-#define MAX_L2CAP_CHANNELS    16
-// Skips conn update at conn completion
-#define BTA_BLE_SKIP_CONN_UPD  FALSE
-#endif
+#define CAMERA_PARAMETERS_EXTRA_H \
+    static const char KEY_QC_AE_BRACKET_HDR[]; \
+    static const char KEY_QC_CAPTURE_BURST_EXPOSURE[]; \
+    static const char KEY_QC_MORPHO_HDR[]; \
+    static const char KEY_QC_ZSL[]; \
+    \

@@ -28,7 +28,6 @@
 import init.armani.usb.rc
 
 on early-init
-    mount debugfs debugfs /sys/kernel/debug
     write /sys/block/mmcblk0/queue/scheduler noop
     write /sys/block/mmcblk0/bdi/read_ahead_kb 512
 
@@ -41,13 +40,13 @@ on init
     symlink /sdcard /mnt/sdcard
     symlink /sdcard /storage/sdcard0
 
+    write /proc/sys/vm/page-cluster 0
+
 on fs
     mount_all fstab.armani
-    restorecon_recursive /persist
-
-    # Activate ZRAM
     swapon_all fstab.armani
-    write /proc/sys/vm/page-cluster 0
+
+    restorecon_recursive /persist
 
 on early-boot
     # Set RLIMIT_MEMLOCK to 64MB
@@ -55,17 +54,6 @@ on early-boot
     write /sys/kernel/boot_adsp/boot 1
 
 on boot
-    # Enable writing to led blink node from userspace
-    chown system system /sys/class/leds/red/blink
-    chown system system /sys/class/leds/red/duty_pcts
-    chown system system /sys/class/leds/red/ramp_step_ms
-    chown system system /sys/class/leds/green/blink
-    chown system system /sys/class/leds/green/duty_pcts
-    chown system system /sys/class/leds/green/ramp_step_ms
-    chown system system /sys/class/leds/blue/blink
-    chown system system /sys/class/leds/blue/duty_pcts
-    chown system system /sys/class/leds/blue/ramp_step_ms
-
     # Dynamic FPS
     chown system graphics /sys/class/graphics/fb0/dynamic_fps
     chmod 0664 /sys/class/graphics/fb0/dynamic_fps
@@ -83,12 +71,13 @@ on boot
     mkdir /dev/socket/qmux_gps 0770 gps gps
     chmod 2770 /dev/socket/qmux_gps
 
-    # Prevents permission denied error for telephony
-    chmod 0644 /proc/cmdline
+    # Create NETMGR daemon socket area
+    mkdir /dev/socket/netmgr 0750 radio radio
 
-    # For setting tcp delayed ack
-    chown system system /sys/kernel/ipv4/tcp_delack_seg
-    chown system system /sys/kernel/ipv4/tcp_use_userconfig
+    # Assign TCP buffer thresholds to be ceiling value of technology maximums
+    # Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  2097152
 
     # To allow interfaces to get v6 address when tethering is enabled
     write /proc/sys/net/ipv6/conf/rmnet0/accept_ra 2
@@ -108,6 +97,17 @@ on boot
     # connections on high-throughput links get dropped when
     # an ack packet comes out of order
     write /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal 1
+
+    # Enable writing to led blink node from userspace
+    chown system system /sys/class/leds/red/blink
+    chown system system /sys/class/leds/red/duty_pcts
+    chown system system /sys/class/leds/red/ramp_step_ms
+    chown system system /sys/class/leds/green/blink
+    chown system system /sys/class/leds/green/duty_pcts
+    chown system system /sys/class/leds/green/ramp_step_ms
+    chown system system /sys/class/leds/blue/blink
+    chown system system /sys/class/leds/blue/duty_pcts
+    chown system system /sys/class/leds/blue/ramp_step_ms
 
     # Switch to interactive and let PowerHAL configure it
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
@@ -145,8 +145,15 @@ on boot
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 
 on post-fs-data
+    # Create directory for TZ Apps
+    mkdir /data/misc/qsee 0770 system system
+
     # Create directory used by audio subsystem
     mkdir /data/misc/audio 0770 audio audio
+
+    # We chown/chmod /persist again so because mount is run as root + defaults
+    chown system system /persist
+    chmod 0771 /persist
 
     # Create directories for gpsone_daemon services
     mkdir /data/misc/gpsone_d 0770 system gps
@@ -195,7 +202,11 @@ service irsc_util /system/bin/irsc_util "/etc/sec_config"
 service rmt_storage /system/bin/rmt_storage
     class core
     user root
-    group system
+
+service rfs_access /system/bin/rfs_access
+    class core
+    user system
+    group system net_raw
 
 service config_bt_addr /system/bin/btnvtool -O
     class core
@@ -215,7 +226,7 @@ on property:vold.decrypt=trigger_restart_framework
 service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     class late_start
     user bluetooth
-    group qcom_oncrpc bluetooth net_bt_admin system
+    group bluetooth net_bt_admin
     disabled
     oneshot
 
@@ -237,7 +248,7 @@ service netmgrd /system/bin/netmgrd
 service sensors /system/bin/sensors.qcom
     class late_start
     user root
-    group root radio system
+    group root
 
 service p2p_supplicant /system/bin/wpa_supplicant \
     -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
@@ -321,16 +332,26 @@ service dhcpcd_bnep4 /system/bin/dhcpcd -BKLG
     disabled
     oneshot
 
+on property:ro.data.large_tcp_window_size=true
+    # Adjust socket buffer to enlarge TCP receive window for high bandwidth (e.g. DO-RevB)
+    write /proc/sys/net/ipv4/tcp_adv_win_scale  2
+
 service ril-daemon2 /system/bin/rild -c 2
     class main
     socket rild2 stream 660 root radio
     socket rild-debug2 stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log
     disabled
+    group radio cache inet misc audio sdcard_r sdcard_rw qcom_diag log
 
 on property:persist.radio.multisim.config=dsds
     start ril-daemon2
+
+on property:ro.boot.modem=HM1AW
+    setprop ro.telephony.default_network 0
+
+on property:ro.boot.modem=HM1AC
+    setprop ro.telephony.default_network 7
 
 service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
@@ -356,6 +377,11 @@ service qseecomd /system/bin/qseecomd
     class core
     user root
     group root
+
+service audiod /system/bin/audiod
+    class late_start
+    user system
+    group system
     
 service adsprpcd /system/bin/adsprpcd
     class main
@@ -363,9 +389,9 @@ service adsprpcd /system/bin/adsprpcd
     group media
 
 service wcnss-service /system/bin/wcnss_service
-    class late_start
-    user root
-    group system wifi
+    class main
+    user system
+    group system wifi radio
     oneshot
 
 service location_mq /system/bin/location-mq

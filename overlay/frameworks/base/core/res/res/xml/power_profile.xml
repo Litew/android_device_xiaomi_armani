@@ -39,7 +39,7 @@
         <value>71</value>
         <value>83</value>
         <value>96</value>
-        <value>103</value>
+        <value>105</value>
         <value>115</value>
         <value>126</value>
         <value>130</value>
@@ -47,5 +47,5 @@
         <value>141</value>
         <value>148</value>
     </array>
-    <item name="battery.capacity">2050</item>
+    <item name="battery.capacity">2000</item>
 </device>
