@@ -60,6 +60,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     qcom.bt.dev_power_class=1
 
 PRODUCT_PACKAGES += \
+    bdaddr_xiaomi \
     init.qcom.bt.sh
 
 # Camera

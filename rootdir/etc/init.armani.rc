@@ -256,18 +256,20 @@ service rmt_storage /system/bin/rmt_storage
     class core
     user root
 
-service config_bluetooth /system/bin/sh /system/etc/init.qcom.bt.sh "onboot"
+service bdaddr /system/bin/bdaddr_xiaomi
     class core
     user root
+    group system
     oneshot
 
-on property:vold.decrypt=trigger_restart_framework
-    start config_bluetooth
+on property:init.svc.bdaddr=stopped
+    chmod 644 /data/misc/bluetooth/bdaddr
+    chown bluetooth bluetooth /data/misc/bluetooth/bdaddr
 
 service hciattach /system/bin/sh /system/etc/init.qcom.bt.sh
     class late_start
     user bluetooth
-    group bluetooth net_bt_admin
+    group qcom_oncrpc bluetooth net_bt_admin system
     disabled
     oneshot
 
