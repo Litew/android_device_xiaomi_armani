@@ -248,3 +248,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
     persist.debug.wfd.enable=1 \
     persist.sys.wfd.virtual=0
+
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    logd.auditd=false
